@@ -1,2 +1,2 @@
 # Assembly Projects
-This repository is including the projects that I had done on x86 Assembly. I will also proceed to continue to add the projects that I would build. Any idea to fix or change the code is appreciated. Thanks. 
+This repository is including the projects that I had done on x86 Assembly. I will also proceed to continue to add the projects that I would build. Any idea to fix or change the code is appreciated. Thanks.
