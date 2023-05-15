@@ -1,48 +1,95 @@
 ; Compile with - nasm -f elf stringcomparer.asm
 ; Link with - ld -m elf_i386 stringcomparer.o -o stringcomparer
-; Run with -./stringcomparer
+; Run with - ./stringcomparer
+
+; Program result - "Strings are not equal"
 
 section .data
-    str1 db "hello", 0
-    str2 db "hello", 0
-    equal_msg db "Strings are equal", 0h
-    not_equal_msg db "Strings are not equal", 0h
+    str1 db "hello1", 0
+    str2 db "hello2", 0
+    equal_msg db "Strings are equal", 0
+    equal_msg_lng equ $-equal_msg
+
+    not_equal_msg db "Strings are not equal", 0
+    not_equal_msg_lng equ $-not_equal_msg
+
+    lng_not_equal db "String lengths are not equal", 0
+    lng_not_equal_lng equ $-lng_not_equal
 
 section .text
-    global _start
+global _start
 
 _start:
+    mov eax, str1
+    mov edx, eax
 
-    mov esi, str1 ; source index
-    mov edi, str2 ; destination index
-    mov ecx, 5    ; counter register
+    mov ebx, str2
+    mov ecx, ebx
 
-    repe cmpsb       ; compare until end of string or mismatch and values are loaded from esi and edi registers
+    ; STRING LENGTH COMPARING
+    find_str_length1:
+        cmp byte [eax], 0
+        jz finished_str1
+        inc eax
+        jmp find_str_length1
 
-    je strings_equal ; jump if both strings are equal
+    finished_str1:
+        sub eax, edx
+        push eax
 
-strings_not_equal:
-    ; print message indicating that the strings are not equal
-    mov eax, 4          
-    mov ebx, 1          
-    mov ecx, not_equal_msg   
-    mov edx, 21         
-    int 0x80            
+    find_str_length2:
+        cmp byte [ebx], 0
+        jz finished_str2
+        inc ebx
+        jmp find_str_length2
 
-    ; exit the program
-    mov eax, 1         
-    xor ebx, ebx       
-    int 0x80           
+    finished_str2:
+        sub ebx, ecx
+        push ebx
 
-strings_equal:
-    ; print message indicating that the strings are equal
-    mov eax, 4         
-    mov ebx, 1         
-    mov ecx, equal_msg 
-    mov edx, 17        
-    int 0x80           
+    length_compare:
+        pop ebx
+        pop eax
+        cmp eax, ebx
+        je string_compare
 
-    ; exit the program
-    mov eax, 1          
-    xor ebx, ebx        
-    int 0x80            
+    write_lng_not_equal:
+        ; Print message indicating that the strings lengths are not equal
+        mov edx, lng_not_equal_lng
+        mov ecx, lng_not_equal
+        jmp print_message
+
+    ; STRING COMPARING
+    string_compare:
+        mov esi, str1 ; Source index
+        mov edi, str2 ; Destination index
+        mov ecx, eax  ; Counter register
+
+        repe cmpsb    ; Compare when they are equal
+        je strings_equal 
+
+        cmp byte [esi], 0
+        jne strings_not_equal
+
+    strings_not_equal:
+        ; Print message indicating that the strings are not equal
+        mov edx, not_equal_msg_lng
+        mov ecx, not_equal_msg
+        jmp print_message
+
+    strings_equal:
+        ; Print message indicating that the strings are equal
+        mov edx, equal_msg_lng
+        mov ecx, equal_msg
+        jmp print_message
+
+    ; MESSAGE PRINTING
+    print_message:
+        mov ebx, 1
+        mov eax, 4
+        int 0x80
+
+        ; exit the program
+        mov eax, 1
+        xor ebx, ebx
+        int 0x80    
